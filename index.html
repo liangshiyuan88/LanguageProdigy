@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>语文小达人 - 作文与阅读理解训练营</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="app">
+        <!-- 顶部导航栏 -->
+        <header class="navbar">
+            <div class="nav-logo" onclick="showPage('home')">
+                <span class="logo-icon">📚</span>
+                <span class="logo-text">语文小达人</span>
+            </div>
+            <nav class="nav-menu">
+                <a onclick="showPage('home')" class="nav-item" id="nav-home">🏠 首页</a>
+                <a onclick="showPage('writing')" class="nav-item" id="nav-writing">✏️ 作文训练</a>
+                <a onclick="showPage('reading')" class="nav-item" id="nav-reading">📖 阅读理解</a>
+                <a onclick="showPage('words')" class="nav-item" id="nav-words">🎯 词语游戏</a>
+                <a onclick="showPage('rewards')" class="nav-item" id="nav-rewards">🏆 积分奖励</a>
+            </nav>
+            <div class="nav-score">
+                <span class="score-icon">⭐</span>
+                <span class="score-value" id="topScore">0</span>
+            </div>
+        </header>
+
+        <!-- 首页 -->
+        <div id="page-home" class="page active">
+            <div class="home-hero">
+                <h1 class="hero-title">欢迎来到语文小达人！</h1>
+                <p class="hero-subtitle">让我们一起变成作文高手和阅读达人吧！🎉</p>
+            </div>
+            <div class="home-cards">
+                <div class="home-card card-writing" onclick="showPage('writing')">
+                    <div class="card-icon">✏️</div>
+                    <h2>作文训练</h2>
+                    <p>跟着引导一步步写作文，还有范文参考哦！</p>
+                </div>
+                <div class="home-card card-reading" onclick="showPage('reading')">
+                    <div class="card-icon">📖</div>
+                    <h2>阅读理解</h2>
+                    <p>读有趣的故事，做练习题，提高理解能力！</p>
+                </div>
+                <div class="home-card card-words" onclick="showPage('words')">
+                    <div class="card-icon">🎯</div>
+                    <h2>词语游戏</h2>
+                    <p>成语接龙、词语填空，边玩边学！</p>
+                </div>
+                <div class="home-card card-rewards" onclick="showPage('rewards')">
+                    <div class="card-icon">🏆</div>
+                    <h2>积分奖励</h2>
+                    <p>完成练习赚积分，兑换精美奖励！</p>
+                </div>
+            </div>
+            <div class="home-stats">
+                <div class="stat-box">
+                    <span class="stat-icon">⭐</span>
+                    <span class="stat-label">总积分</span>
+                    <span class="stat-value" id="homeScore">0</span>
+                </div>
+                <div class="stat-box">
+                    <span class="stat-icon">📝</span>
+                    <span class="stat-label">已完成作文</span>
+                    <span class="stat-value" id="homeEssays">0</span>
+                </div>
+                <div class="stat-box">
+                    <span class="stat-icon">📚</span>
+                    <span class="stat-label">已读文章</span>
+                    <span class="stat-value" id="homeReadings">0</span>
+                </div>
+                <div class="stat-box">
+                    <span class="stat-icon">🎯</span>
+                    <span class="stat-label">词语游戏</span>
+                    <span class="stat-value" id="homeWordGames">0</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 作文训练页 -->
+        <div id="page-writing" class="page"></div>
+
+        <!-- 阅读理解页 -->
+        <div id="page-reading" class="page"></div>
+
+        <!-- 词语游戏页 -->
+        <div id="page-words" class="page"></div>
+
+        <!-- 积分奖励页 -->
+        <div id="page-rewards" class="page"></div>
+    </div>
+
+    <!-- 飘字动画容器 -->
+    <div id="float-container"></div>
+
+    <script src="topics_all.js"></script>
+    <script src="data.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
