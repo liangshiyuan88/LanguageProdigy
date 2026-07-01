@@ -10,7 +10,8 @@ let state = {
     currentWordGame: 'idiom',
     writingStartTime: null,
     writingTimer: null,
-    currentLevel: '初级'
+    currentLevel: '初级',
+    currentReadingLevel: '初级'
 };
 
 // ===== 初始化 =====
@@ -31,6 +32,7 @@ function loadState() {
             state.currentTopic = null;
             state.currentPassage = null;
             if (!state.currentLevel) state.currentLevel = '初级';
+            if (!state.currentReadingLevel) state.currentReadingLevel = '初级';
         } catch(e) {}
     }
 }
@@ -773,10 +775,20 @@ function renderReadingPage() {
     if (state.currentPassage) {
         renderReadingExercise(container);
     } else {
+        const levels = ['初级', '中级', '高级'];
+        const levelEmojis = { '初级': '🌱', '中级': '⭐', '高级': '🏆' };
         let html = '<h2 class="section-title">📖 阅读理解</h2>';
-        html += '<p style="color:#666;margin-bottom:20px;font-size:15px;">选一篇文章来阅读吧！读完后做题，答对就能获得积分~</p>';
-        html += '<div class="reading-list">';
-        readingPassages.forEach(p => {
+        html += '<p style="color:#666;margin-bottom:16px;font-size:15px;">选一篇文章来阅读吧！读完后做题，答对就能获得积分~</p>';
+        html += '<div class="level-tabs">';
+        levels.forEach(lv => {
+            const count = readingPassages.filter(p => p.level === lv).length;
+            const active = state.currentReadingLevel === lv ? 'active' : '';
+            html += `<div class="level-tab ${active}" onclick="switchReadingLevel('${lv}')">${levelEmojis[lv]} ${lv}<span class="level-count">${count}</span></div>`;
+        });
+        html += '</div>';
+        const filtered = readingPassages.filter(p => p.level === state.currentReadingLevel);
+        html += `<div class="reading-list">`;
+        filtered.forEach(p => {
             const done = state.readingsDone.includes(p.id);
             html += `
                 <div class="reading-card" onclick="selectPassage(${p.id})">
@@ -785,7 +797,7 @@ function renderReadingPage() {
                         <h3>${p.title} ${done ? '✅' : ''}</h3>
                         <p>共${p.questions.length}道题</p>
                         <div class="reading-meta">
-                            <span>四年级</span>
+                            <span>${p.level}</span>
                             <span>${done ? '已完成' : '未完成'}</span>
                         </div>
                     </div>
@@ -799,6 +811,11 @@ function renderReadingPage() {
 
 function selectPassage(id) {
     state.currentPassage = readingPassages.find(p => p.id === id);
+    renderReadingPage();
+}
+
+function switchReadingLevel(level) {
+    state.currentReadingLevel = level;
     renderReadingPage();
 }
 
@@ -929,14 +946,18 @@ function switchWordGame(type) {
 let idiomState = {
     index: 0,
     correctCount: 0,
-    totalCount: 0
+    totalCount: 0,
+    questions: []
 };
 
 function renderIdiomGame() {
     const area = document.getElementById('wordGameArea');
+    // 从100题中随机选10题
+    const shuffled = [...idiomChain].sort(() => Math.random() - 0.5);
+    idiomState.questions = shuffled.slice(0, 10);
     idiomState.index = 0;
     idiomState.correctCount = 0;
-    idiomState.totalCount = idiomChain.length;
+    idiomState.totalCount = idiomState.questions.length;
 
     area.innerHTML = `
         <div class="game-area">
@@ -962,7 +983,7 @@ function showIdiomQuestion() {
         return;
     }
 
-    const item = idiomChain[idiomState.index];
+    const item = idiomState.questions[idiomState.index];
     const lastChar = item.idiom.charAt(item.idiom.length - 1);
 
     content.innerHTML = `
@@ -984,7 +1005,7 @@ function showIdiomQuestion() {
 function submitIdiom() {
     const input = document.getElementById('idiomInput');
     const userAnswer = input.value.trim();
-    const item = idiomChain[idiomState.index];
+    const item = idiomState.questions[idiomState.index];
     const result = document.getElementById('idiomResult');
     const nextBtn = document.getElementById('idiomNextBtn');
 
@@ -1067,19 +1088,25 @@ let fillState = {
     correctCount: 0,
     currentAnswer: '',
     options: [],
-    selectedOption: null
+    selectedOption: null,
+    questions: [],
+    totalCount: 0
 };
 
 function renderFillGame() {
     const area = document.getElementById('wordGameArea');
+    // 从100题中随机选10题
+    const shuffled = [...wordFillQuestions].sort(() => Math.random() - 0.5);
+    fillState.questions = shuffled.slice(0, 10);
     fillState.index = 0;
     fillState.correctCount = 0;
+    fillState.totalCount = fillState.questions.length;
 
     area.innerHTML = `
         <div class="game-area">
             <p class="game-prompt">📝 词语填空！选出正确的字填入句子中的空格</p>
             <div class="game-stats">
-                <div class="game-stat">进度: <span id="fillProgress">1/${wordFillQuestions.length}</span></div>
+                <div class="game-stat">进度: <span id="fillProgress">1/${fillState.totalCount}</span></div>
                 <div class="game-stat">正确: <span id="fillCorrect">0</span></div>
             </div>
             <div id="fillContent"></div>
@@ -1094,12 +1121,12 @@ function renderFillGame() {
 
 function showFillQuestion() {
     const content = document.getElementById('fillContent');
-    if (fillState.index >= wordFillQuestions.length) {
+    if (fillState.index >= fillState.totalCount) {
         showFillFinal();
         return;
     }
 
-    const q = wordFillQuestions[fillState.index];
+    const q = fillState.questions[fillState.index];
     const parts = q.sentence.split('___');
     fillState.currentAnswer = q.answer;
 
@@ -1123,7 +1150,7 @@ function showFillQuestion() {
 
     document.getElementById('fillResult').textContent = '';
     document.getElementById('fillNextBtn').style.display = 'none';
-    document.getElementById('fillProgress').textContent = `${fillState.index + 1}/${wordFillQuestions.length}`;
+    document.getElementById('fillProgress').textContent = `${fillState.index + 1}/${fillState.totalCount}`;
     document.getElementById('fillCorrect').textContent = fillState.correctCount;
 }
 
@@ -1185,7 +1212,7 @@ function showFillFinal() {
     const content = document.getElementById('fillContent');
     const result = document.getElementById('fillResult');
     const nextBtn = document.getElementById('fillNextBtn');
-    const accuracy = Math.round((fillState.correctCount / wordFillQuestions.length) * 100);
+    const accuracy = Math.round((fillState.correctCount / fillState.totalCount) * 100);
 
     let praise = '';
     if (accuracy >= 80) praise = '🏆 词语达人！太厉害了！';
@@ -1197,7 +1224,7 @@ function showFillFinal() {
         <div style="font-size:48px;margin-bottom:16px;">🎉</div>
         <h3 style="font-size:24px;color:#f0932b;margin-bottom:12px;">游戏结束！</h3>
         <div class="game-stats">
-            <div class="game-stat">正确: <span>${fillState.correctCount}/${wordFillQuestions.length}</span></div>
+            <div class="game-stat">正确: <span>${fillState.correctCount}/${fillState.totalCount}</span></div>
             <div class="game-stat">正确率: <span>${accuracy}%</span></div>
         </div>
         <p style="font-size:18px;color:#555;margin-top:12px;">${praise}</p>
@@ -1324,7 +1351,8 @@ function resetProgress() {
         currentWordGame: 'idiom',
         writingStartTime: null,
         writingTimer: null,
-        currentLevel: '初级'
+        currentLevel: '初级',
+        currentReadingLevel: '初级'
     };
     localStorage.removeItem('chineseGame_state');
     Object.keys(localStorage).forEach(key => {
